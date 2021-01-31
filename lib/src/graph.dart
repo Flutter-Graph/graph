@@ -21,5 +21,5 @@ class Graph extends ListGraph<Vertex, Edge> {
   void registerPaintCallback(Function(PaintDelegate delegate) r) =>
       renderer.rebuild = r;
 
-  void sizeChanged(Size s) => renderer.size = s;
+  void sizeChanged(Size s) => renderer.size = s;   
 }
