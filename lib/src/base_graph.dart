@@ -103,11 +103,6 @@ abstract class BaseGraph<VertexType extends BaseVertex,
 
   int getEdgesCount();
 
-  Iterable<EdgeType> edges({VertexType v}) {
-    //TODO
-    throw UnimplementedError();
-  }
-
   //returns the number of edges connected to the vertex
   int getDegree(VertexType vertex) {
     return isDirected()
@@ -115,21 +110,14 @@ abstract class BaseGraph<VertexType extends BaseVertex,
         : getInDegree(vertex);
   }
 
-  //Returns an iterable object which can be iterated trough all neighbours
-  Iterable<VertexType> getNeighbors(VertexType vertex) {
-    //TODO
-    throw UnimplementedError();
-  }
+
+  Iterator<EdgeType> edgeIterator({VertexType vertex, bool source});
 
   //Returns an Iterable which can iterated on all vertices of the graph
   Iterable<VertexType> verticesIterable() {
     return this;
   }
 
-  //Returns an iterable object which can be iterated trough all Backneighbours
-
-   Iterable<VertexType> getBackNeighbors(VertexType vertex) {
-    //TODO
-    throw UnimplementedError();
-  }
+  
 }
+

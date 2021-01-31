@@ -16,11 +16,11 @@ class BaseVertex {
     return BaseVertex(this.prop);
   }
 
-  get color => prop.color;
+  int get color => prop.color;
 
   set color(newColor) => prop.color = newColor;
 
-  get isMarked => prop.mark;
+  bool get isMarked => prop.mark;
 
   set mark(newMark) => prop.mark = newMark;
 

@@ -1,3 +1,5 @@
+import 'dart:core';
+
 import 'package:graph/src/base_edge.dart';
 import 'package:graph/src/base_graph.dart';
 import 'package:graph/src/base_vertex.dart';
@@ -8,24 +10,12 @@ import 'utils/pair.dart';
 class ListGraph<VertexType extends BaseVertex,
         EdgeType extends BaseEdge<VertexType>>
     extends BaseGraph<VertexType, EdgeType> {
-  factory ListGraph([bool directed = false]) {
-    return ListGraph._(
-      directed: directed,
-      list: [],
-      inverseList: [],
-      vertices: [],
-      outDegree: [],
-      inDegree: [],
-    );
-  }
-
-  ListGraph._(
-      {this.directed,
-      this.list,
-      this.inverseList,
-      this.vertices,
-      this.outDegree,
-      this.inDegree});
+  ListGraph({this.directed})
+      : list = [],
+        inverseList = [],
+        vertices = [],
+        outDegree = [],
+        inDegree = [];
 
   //specified whether the graph is directed
   bool directed;
@@ -55,6 +45,26 @@ class ListGraph<VertexType extends BaseVertex,
   @override
   Iterator<VertexType> get iterator => vertices.iterator;
 
+  VertexType operator [](int i) => vertices[i];
+
+  Iterable<EdgeType> get edges => EdgeIterabel<VertexType, EdgeType>(this);
+
+  @override
+  void checkVertex(VertexType vertex) {
+    if (vertexIdOutOfRange(getId(vertex))) {
+      String message = "Out of Range";
+
+      if (vertices.contains(vertex)) {
+        message +=
+            ":It seems that this vertex exists in two different graph objects. This is illegal.";
+        throw new InvalidVertexException(message);
+      }
+    }
+
+    if (vertex != vertices[getId(vertex)])
+      throw new InvalidVertexException("Invalid");
+  }
+
   @override
   void clear() {
     list = [];
@@ -68,7 +78,7 @@ class ListGraph<VertexType extends BaseVertex,
 
   @override
   bool containsVertex(VertexType vertex) {
-    vertices.contains(vertex);
+    return vertices.contains(vertex);
   }
 
   @override
@@ -223,22 +233,6 @@ class ListGraph<VertexType extends BaseVertex,
   }
 
   @override
-  void checkVertex(VertexType vertex) {
-    if (vertexIdOutOfRange(getId(vertex))) {
-      String message = "Out of Range";
-
-      if (vertices.contains(vertex)) {
-        message +=
-            ":It seems that this vertex exists in two different graph objects. This is illegal.";
-        throw new InvalidVertexException(message);
-      }
-    }
-
-    if (vertex != vertices[getId(vertex)])
-      throw new InvalidVertexException("Invalid");
-  }
-
-  @override
   void removeAllEdges(VertexType source, VertexType target) {
     final List<EdgeType> edges = inverseList[source.id]
         .where((element) => element.first.target == target)
@@ -313,11 +307,10 @@ class ListGraph<VertexType extends BaseVertex,
   //returns 0 if there is no edge between source and
   @override
   int weightOfEdge(VertexType source, VertexType target) {
-	   if(isConnected(source, target))
-	   {
-		   return getEdges(source, target).map((e) => e.weight).first;
-	   }
-	   return 0;
+    if (isConnected(source, target)) {
+      return getEdges(source, target).map((e) => e.weight).first;
+    }
+    return 0;
   }
 
   void setId(VertexType vertex, int id) {
@@ -384,7 +377,6 @@ class EdgeIterator<VertexType extends BaseVertex,
 
   Iterator<EdgeType> edgesIterator;
   final ListGraph graph;
-  EdgeType lastEdge;
 
   @override
   EdgeType get current => edgesIterator.current;
@@ -395,3 +387,12 @@ class EdgeIterator<VertexType extends BaseVertex,
   }
 }
 
+class EdgeIterabel<VertexType extends BaseVertex,
+    EdgeType extends BaseEdge<VertexType>> extends Iterable<EdgeType> {
+  final EdgeIterator<VertexType, EdgeType> _iterator;
+
+  EdgeIterabel(ListGraph graph)
+      : _iterator = EdgeIterator<VertexType, EdgeType>(graph);
+
+  Iterator<EdgeType> get iterator => _iterator;
+}
