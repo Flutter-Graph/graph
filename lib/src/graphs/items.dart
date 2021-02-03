@@ -30,8 +30,9 @@ abstract class GraphItems implements Iterable {
   // ignore: use_function_type_syntax_for_parameters
   Iterable<R> flatMap<R>(Iterable<R> f(item));
 
-  ///set the VectorPosition of an node. Returns false if there is no such node
+  /// set the VectorPosition of an node. Returns false if there is no such node
   bool setPos(val, VectorPosition pos);
+
 }
 
 /// Mixing of implementations of [GraphItems]

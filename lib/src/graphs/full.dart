@@ -9,5 +9,6 @@ class FullGraph
         DirectedGraphMixin,
         DirectedValueGraphMixin,
         GraphGetMixin,
+        GraphLayoutMixin,
         IterableMixin
     implements Graph {}

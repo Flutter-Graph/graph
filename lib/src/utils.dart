@@ -70,7 +70,7 @@ class _EffectTuple2<T> {
     return this;
   }
 
-  /// `doa(a)` tjen `dob(b)`
+  /// `doa(a)` then `dob(b)`
   _EffectTuple2<T> allDo(Function(T a) doa, Function(T b) dob) {
     doa(t.a);
     dob(t.b);
@@ -177,7 +177,6 @@ class VectorPosition {
 
   const VectorPosition(this.dx, this.dy);
 
-
   static const VectorPosition zero = VectorPosition(0.0, 0.0);
 
   static VectorPosition lerp(VectorPosition a, VectorPosition b, double t) {
@@ -192,9 +191,16 @@ class VectorPosition {
       if (a == null) {
         return b * t;
       } else {
-        return VectorPosition(lerpDouble(a.dx, b.dx, t), lerpDouble(a.dy, b.dy, t));
+        return VectorPosition(
+            lerpDouble(a.dx, b.dx, t), lerpDouble(a.dy, b.dy, t));
       }
     }
+  }
+
+  VectorPosition round() {
+    final x = dx.roundToDouble();
+    final y = dx.roundToDouble();
+    return VectorPosition(x, y);
   }
 
   double get distanceSquared => dx * dx + dy * dy;
@@ -209,24 +215,33 @@ class VectorPosition {
 
   bool operator >=(VectorPosition other) => dx >= other.dx && dy >= other.dy;
 
-  VectorPosition operator *(double operand) => VectorPosition(dx * operand, dy * operand);
+  VectorPosition operator *(double operand) =>
+      VectorPosition(dx * operand, dy * operand);
 
-  VectorPosition operator /(double operand) => VectorPosition(dx / operand, dy / operand);
+  VectorPosition operator /(double operand) =>
+      VectorPosition(dx / operand, dy / operand);
 
-  VectorPosition operator +(VectorPosition other) => VectorPosition(dx + other.dx, dy + other.dy);
+  VectorPosition operator +(VectorPosition other) =>
+      VectorPosition(dx + other.dx, dy + other.dy);
 
-  VectorPosition operator -(VectorPosition other) => VectorPosition(dx - other.dx, dy - other.dy);
+  VectorPosition operator -(VectorPosition other) =>
+      VectorPosition(dx - other.dx, dy - other.dy);
 
   VectorPosition operator -() => VectorPosition(-dx, -dy);
+
+  VectorPosition get normalise => VectorPosition(dx / length, dy / length);
 
   @override
   bool operator ==(Object other) {
     return other is VectorPosition && other.dx == dx && other.dy == dy;
   }
 
-  double get distance => math.sqrt(dx * dx + dy * dy);
+  double get length => math.sqrt(dx * dx + dy * dy);
 
-  
+  @override
+  String toString() {
+    return '($dx / $dy)';
+  }
 }
 
 double lerpDouble(num a, num b, double t) {
@@ -239,4 +254,15 @@ double lerpDouble(num a, num b, double t) {
   assert(b.isFinite, 'Cannot interpolate between finite and non-finite values');
   assert(t.isFinite, 't must be finite when interpolating between values');
   return a * (1.0 - t) + b * t;
+}
+
+double randomNotNull(int max) {
+  var number = 0.0;
+
+  do {
+    number =
+        (math.Random().nextInt(max) - math.Random().nextInt(max)).toDouble();
+  } while (number == 0.0);
+
+  return number;
 }
