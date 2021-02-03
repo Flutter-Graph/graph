@@ -1,7 +1,8 @@
-library meowtype.graph;
+library graph;
 
 import 'package:some/index.dart';
 import 'dart:collection';
+import 'dart:math' as math;
 
 part 'node.dart';
 part 'utils.dart';
@@ -12,6 +13,7 @@ part './graphs/undirected.dart';
 part './graphs/undirected.value.dart';
 part './graphs/get.dart';
 part './graphs/full.dart';
+part './layout/graph_layout.dart';
 
 /// Contains [DirectedGraph] and [UndirectedGraph], And can't set the value of the edge
 abstract class LinkGraph implements UndirectedGraph, DirectedGraph {

@@ -1,4 +1,4 @@
-part of meowtype.graph;
+part of graph;
 
 /// Undirected graph, Can create an edge and value between 2 nodes
 abstract class UndirectedValueGraph extends UndirectedGraph
@@ -57,6 +57,7 @@ abstract class UndirectedValueGraph extends UndirectedGraph
 /// Mixing of implementations of [UndirectedValueGraph]
 mixin UndirectedValueGraphMixin on UndirectedGraphMixin
     implements UndirectedValueGraph, GraphGet {
+  @override
   void set(a, b, key, val, {List tags = const []}) {
     _Tuple2(a, b)
         .map((v) => _map_add_or_get(v, _newNode))
@@ -66,9 +67,11 @@ mixin UndirectedValueGraphMixin on UndirectedGraphMixin
         .mutual((f, t) => f.setValTag(t, key, tags));
   }
 
+  @override
   void setBy<T>(a, b, val, {List tags = const []}) =>
       set(a, b, T, val, tags: tags);
 
+  @override
   bool hasEdge(a, b, key, {List anyTags = const [], List allTags = const []}) {
     return _Tuple2(a, b)
         .map((v) => _map_add_or_get(v, _newNode))
@@ -77,9 +80,11 @@ mixin UndirectedValueGraphMixin on UndirectedGraphMixin
         .toDo(_or);
   }
 
+  @override
   bool hasEdgeBy<T>(a, b, {List anyTags = const [], List allTags = const []}) =>
       hasEdge(a, b, T, anyTags: anyTags, allTags: allTags);
 
+  @override
   bool unSet(a, b, key, {List anyTags = const [], List allTags = const []}) {
     return _Tuple2(a, b)
         .map((v) => _map_add_or_get(v, _newNode))
@@ -93,14 +98,16 @@ mixin UndirectedValueGraphMixin on UndirectedGraphMixin
         .val;
   }
 
+  @override
   bool unSetBy<T>(a, b, {List anyTags = const [], List allTags = const []}) =>
       unSet(a, b, T, anyTags: anyTags, allTags: allTags);
 
+  @override
   Iterable values(val, key,
       {List anyTags = const [], List allTags = const []}) {
     final _v = _map_add_or_get(val, _newNode);
 
-    final bool Function(Maybe) where =
+    final where =
         anyTags.isEmpty && allTags.isEmpty
             ? (m) => m is Some
             : (m) => m is Some
@@ -113,6 +120,7 @@ mixin UndirectedValueGraphMixin on UndirectedGraphMixin
     return _concat(a, b).where(where).map((s) => s.val).toSet();
   }
 
+  @override
   Iterable valuesBy<T>(val,
           {List anyTags = const [], List allTags = const []}) =>
       values(val, T, anyTags: anyTags, allTags: allTags);

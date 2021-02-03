@@ -1,4 +1,4 @@
-part of meowtype.graph;
+part of graph;
 
 /// Undirected graph, Can create an edge between 2 nodes
 abstract class UndirectedGraph extends GraphItems {
@@ -27,6 +27,7 @@ abstract class UndirectedGraph extends GraphItems {
 
 /// Mixing of implementations of [UndirectedGraph]
 mixin UndirectedGraphMixin on GraphItemsMixin implements UndirectedGraph {
+  @override
   void link(a, b, {List tags = const []}) {
     _Tuple2(a, b)
         .map((v) => _map_add_or_get(v, _newNode))
@@ -36,6 +37,7 @@ mixin UndirectedGraphMixin on GraphItemsMixin implements UndirectedGraph {
         .mutual((f, t) => f.setTag(t, tags));
   }
 
+  @override
   bool hasLink(a, b, {List anyTags = const [], List allTags = const []}) {
     return _Tuple2(a, b)
         .map((v) => _map_add_or_get(v, _newNode))
@@ -44,6 +46,7 @@ mixin UndirectedGraphMixin on GraphItemsMixin implements UndirectedGraph {
         .toDo(_or);
   }
 
+  @override
   bool unLink(a, b, {List anyTags = const [], List allTags = const []}) {
     return _Tuple2(a, b)
         .map((v) => _map_add_or_get(v, _newNode))
@@ -63,6 +66,7 @@ mixin UndirectedGraphMixin on GraphItemsMixin implements UndirectedGraph {
         .val;
   }
 
+  @override
   Iterable links(val, {List anyTags = const [], List allTags = const []}) {
     final _v = _map_add_or_get(val, _newNode);
     if (anyTags.isEmpty && allTags.isEmpty) {

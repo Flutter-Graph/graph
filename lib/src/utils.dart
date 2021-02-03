@@ -1,4 +1,4 @@
-part of meowtype.graph;
+part of graph;
 
 class _Tuple2<T> {
   final T a;
@@ -6,13 +6,14 @@ class _Tuple2<T> {
   _Tuple2(this.a, this.b);
 
   /// return `fn(a, b)`
-  R toDo<R>(R fn(T a, T b)) => fn(a, b);
+  R toDo<R>(R Function(T a, T b) fn) => fn(a, b);
 
   /// `x = toDo(a)` and `y = toDo(b)` then return `Tuple2(x, y)`
-  _Tuple2<R> map<R>(R toDo(T v)) => _Tuple2(toDo(a), toDo(b));
+  _Tuple2<R> map<R>(R Function(T v) toDo) => _Tuple2(toDo(a), toDo(b));
 
   /// `x = toDo(a, b)` and `y = toDo(b, a)` then return `Tuple2(x, y)`
-  _Tuple2<R> mutual<R>(R toDo(T f, T t)) => _Tuple2(toDo(a, b), toDo(b, a));
+  _Tuple2<R> mutual<R>(R Function(T f, T t) toDo) =>
+      _Tuple2(toDo(a, b), toDo(b, a));
 
   /// return `Tuple2(Tuple2(a, b), Tuple2(a, b))`
   _Tuple2<_Tuple2<T>> fork() => _Tuple2(this, this);
@@ -21,14 +22,16 @@ class _Tuple2<T> {
   _Tuple2<_Tuple2<T>> pack() => _Tuple2(_Tuple2(a, a), _Tuple2(b, b));
 
   /// `x = doa(a)` and `y = dob(b)` then return `Tuple2(x, y)`
-  _Tuple2<R> allDo<R>(R doa(T a), R dob(T b)) => _Tuple2(doa(a), dob(b));
+  _Tuple2<R> allDo<R>(R Function(T a) doa, R Function(T b) dob) =>
+      _Tuple2(doa(a), dob(b));
 
   /// `x = toDo(a)` and `y = toDo(b)` then return `Tuple2(x, y)`
-  _FnTuple2<F, R> mapFn<F extends Function, R>(R Function(F) toDo(T v)) =>
+  _FnTuple2<F, R> mapFn<F extends Function, R>(
+          R Function(F) Function(T v) toDo) =>
       _FnTuple2(toDo(a), toDo(b));
 
   /// when fn -> true return Some(this) else None
-  Maybe<_Tuple2<T>> where(bool fn(_Tuple2<T> t)) =>
+  Maybe<_Tuple2<T>> where(bool Function(_Tuple2<T> t) fn) =>
       fn(this) ? Some(this) : None();
 
   /// make effect
@@ -48,27 +51,27 @@ class _EffectTuple2<T> {
   _EffectTuple2(this.t);
 
   /// `fn(a, b)`
-  _EffectTuple2<T> toDo(fn(T a, T b)) {
+  _EffectTuple2<T> toDo(Function(T a, T b) fn) {
     fn(t.a, t.b);
     return this;
   }
 
   /// `toDo(a)` then `toDo(b)`
-  _EffectTuple2<T> map(toDo(T v)) {
+  _EffectTuple2<T> map(Function(T v) toDo) {
     toDo(t.a);
     toDo(t.b);
     return this;
   }
 
   /// `toDo(a, b)` then `toDo(b, a)`
-  _EffectTuple2<T> mutual(toDo(T f, T t)) {
+  _EffectTuple2<T> mutual(Function(T f, T t) toDo) {
     toDo(t.a, t.b);
     toDo(t.b, t.a);
     return this;
   }
 
   /// `doa(a)` tjen `dob(b)`
-  _EffectTuple2<T> allDo(doa(T a), dob(T b)) {
+  _EffectTuple2<T> allDo(Function(T a) doa, Function(T b) dob) {
     doa(t.a);
     dob(t.b);
     return this;
@@ -166,4 +169,74 @@ bool _check_hasToVal_and_all_any_val_tags(
         allTags: allTags, anyTags: anyTags);
   }
   return false;
+}
+
+class VectorPosition {
+  final double dx;
+  final double dy;
+
+  const VectorPosition(this.dx, this.dy);
+
+
+  static const VectorPosition zero = VectorPosition(0.0, 0.0);
+
+  static VectorPosition lerp(VectorPosition a, VectorPosition b, double t) {
+    assert(t != null); // ignore: unnecessary_null_comparison
+    if (b == null) {
+      if (a == null) {
+        return null;
+      } else {
+        return a * (1.0 - t);
+      }
+    } else {
+      if (a == null) {
+        return b * t;
+      } else {
+        return VectorPosition(lerpDouble(a.dx, b.dx, t), lerpDouble(a.dy, b.dy, t));
+      }
+    }
+  }
+
+  double get distanceSquared => dx * dx + dy * dy;
+
+  double get direction => math.atan2(dy, dx);
+
+  bool operator <(VectorPosition other) => dx < other.dx && dy < other.dy;
+
+  bool operator <=(VectorPosition other) => dx <= other.dx && dy <= other.dy;
+
+  bool operator >(VectorPosition other) => dx > other.dx && dy > other.dy;
+
+  bool operator >=(VectorPosition other) => dx >= other.dx && dy >= other.dy;
+
+  VectorPosition operator *(double operand) => VectorPosition(dx * operand, dy * operand);
+
+  VectorPosition operator /(double operand) => VectorPosition(dx / operand, dy / operand);
+
+  VectorPosition operator +(VectorPosition other) => VectorPosition(dx + other.dx, dy + other.dy);
+
+  VectorPosition operator -(VectorPosition other) => VectorPosition(dx - other.dx, dy - other.dy);
+
+  VectorPosition operator -() => VectorPosition(-dx, -dy);
+
+  @override
+  bool operator ==(Object other) {
+    return other is VectorPosition && other.dx == dx && other.dy == dy;
+  }
+
+  double get distance => math.sqrt(dx * dx + dy * dy);
+
+  
+}
+
+double lerpDouble(num a, num b, double t) {
+  if (a == b || (a?.isNaN == true) && (b?.isNaN == true)) {
+    return a?.toDouble();
+  }
+  a ??= 0.0;
+  b ??= 0.0;
+  assert(a.isFinite, 'Cannot interpolate between finite and non-finite values');
+  assert(b.isFinite, 'Cannot interpolate between finite and non-finite values');
+  assert(t.isFinite, 't must be finite when interpolating between values');
+  return a * (1.0 - t) + b * t;
 }

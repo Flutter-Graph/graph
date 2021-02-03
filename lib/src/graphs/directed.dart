@@ -1,4 +1,4 @@
-part of meowtype.graph;
+part of graph;
 
 /// Directed graph, can set the direction of the edge
 abstract class DirectedGraph extends GraphItems {
@@ -32,6 +32,7 @@ abstract class DirectedGraph extends GraphItems {
 
 /// Mixing of implementations of [DirectedGraph]
 mixin DirectedGraphMixin on GraphItemsMixin implements DirectedGraph {
+  @override
   void linkTo(from, to, {List tags = const []}) {
     final _f = _map_add_or_get(from, _newNode);
     final _t = _map_add_or_get(to, _newNode);
@@ -40,6 +41,7 @@ mixin DirectedGraphMixin on GraphItemsMixin implements DirectedGraph {
     _f.setTag(_t, tags);
   }
 
+  @override
   bool hasLinkTo(from, to, {List anyTags = const [], List allTags = const []}) {
     final _f = _map_add_or_get(from, _newNode);
     final _t = _map_add_or_get(to, _newNode);
@@ -47,6 +49,7 @@ mixin DirectedGraphMixin on GraphItemsMixin implements DirectedGraph {
         anyTags: anyTags, allTags: allTags);
   }
 
+  @override
   bool unLinkTo(from, to, {List anyTags = const [], List allTags = const []}) {
     final _f = _map_add_or_get(from, _newNode);
     final _t = _map_add_or_get(to, _newNode);
@@ -60,6 +63,7 @@ mixin DirectedGraphMixin on GraphItemsMixin implements DirectedGraph {
     return false;
   }
 
+  @override
   Iterable linkTos(val, {List anyTags = const [], List allTags = const []}) {
     final _v = _map_add_or_get(val, _newNode);
     return anyTags.isEmpty && allTags.isEmpty
@@ -70,6 +74,7 @@ mixin DirectedGraphMixin on GraphItemsMixin implements DirectedGraph {
             .map((n) => _node_to_val[n]);
   }
 
+  @override
   Iterable linkFroms(val, {List anyTags = const [], List allTags = const []}) {
     final _v = _map_add_or_get(val, _newNode);
     return anyTags.isEmpty && allTags.isEmpty

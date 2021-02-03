@@ -1,16 +1,16 @@
-part of meowtype.graph;
+part of graph;
 
 class _Edge {
-  final Set tags = Set();
-  final Map<dynamic, Maybe<dynamic>> map = Map<dynamic, Maybe<dynamic>>();
-  final Map<dynamic, Set> valtags = Map<dynamic, Set>();
+  final Set tags = {};
+  final Map<dynamic, Maybe<dynamic>> map = <dynamic, Maybe<dynamic>>{};
+  final Map<dynamic, Set> valtags = <dynamic, Set>{};
 }
 
 _Node _newNode() => _Node();
-Set _newSet() => Set();
+Set _newSet() => <dynamic>{};
 
 class _Node {
-  final Set<_Node> from = Set();
+  final Set<_Node> from = {};
 
   final Map<_Node, _Edge> to = {};
 

@@ -1,4 +1,4 @@
-part of meowtype.graph;
+part of graph;
 
 /// Directed graph, but can set the direction of the edge and the value of the edge
 abstract class DirectedValueGraph extends DirectedGraph implements GraphGet {
@@ -68,6 +68,7 @@ abstract class DirectedValueGraph extends DirectedGraph implements GraphGet {
 /// Mixing of implementations of [DirectedValueGraph]
 mixin DirectedValueGraphMixin on DirectedGraphMixin
     implements DirectedValueGraph, GraphGet {
+  @override
   void setTo(from, to, key, val, {List tags = const []}) {
     final _f = _map_add_or_get(from, _newNode);
     final _t = _map_add_or_get(to, _newNode);
@@ -76,9 +77,11 @@ mixin DirectedValueGraphMixin on DirectedGraphMixin
     _f.setValTag(_t, key, tags);
   }
 
+  @override
   void setToBy<T>(from, to, val, {List tags = const []}) =>
       setTo(from, to, T, val, tags: tags);
 
+  @override
   bool hasEdgeTo(from, to, key,
       {List anyTags = const [], List allTags = const []}) {
     final _f = _map_add_or_get(from, _newNode);
@@ -87,10 +90,12 @@ mixin DirectedValueGraphMixin on DirectedGraphMixin
         anyTags: anyTags, allTags: allTags);
   }
 
+  @override
   bool hasEdgeToBy<T>(from, to,
           {List anyTags = const [], List allTags = const []}) =>
       hasEdgeTo(from, to, T, anyTags: anyTags, allTags: allTags);
 
+  @override
   bool unSetTo(from, to, key,
       {List anyTags = const [], List allTags = const []}) {
     final _f = _map_add_or_get(from, _newNode);
@@ -103,15 +108,17 @@ mixin DirectedValueGraphMixin on DirectedGraphMixin
     return false;
   }
 
+  @override
   bool unSetToBy<T>(from, to,
           {List anyTags = const [], List allTags = const []}) =>
       unSetTo(from, to, T, anyTags: anyTags, allTags: allTags);
 
+  @override
   Iterable valueTos(val, key,
       {List anyTags = const [], List allTags = const []}) {
     final _v = _map_add_or_get(val, _newNode);
 
-    final bool Function(Maybe) where =
+    final where =
         anyTags.isEmpty && allTags.isEmpty
             ? (m) => m is Some
             : (m) => m is Some
@@ -122,11 +129,12 @@ mixin DirectedValueGraphMixin on DirectedGraphMixin
     return _v.to.keys.map((n) => _v.get(n, key)).where(where).map((s) => s.val);
   }
 
+  @override
   Iterable valueFroms(val, key,
       {List anyTags = const [], List allTags = const []}) {
     final _v = _map_add_or_get(val, _newNode);
 
-    final bool Function(Maybe) where =
+    final where =
         anyTags.isEmpty && allTags.isEmpty
             ? (m) => m is Some
             : (m) => m is Some
@@ -137,10 +145,12 @@ mixin DirectedValueGraphMixin on DirectedGraphMixin
     return _v.from.map((n) => n.get(_v, key)).where(where).map((s) => s.val);
   }
 
+  @override
   Iterable valueTosBy<T>(val,
           {List anyTags = const [], List allTags = const []}) =>
       valueTos(val, T, anyTags: anyTags, allTags: allTags);
 
+  @override
   Iterable valueFromsBy<T>(val,
           {List anyTags = const [], List allTags = const []}) =>
       valueFroms(val, T, anyTags: anyTags, allTags: allTags);

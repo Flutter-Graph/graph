@@ -1,4 +1,4 @@
-part of meowtype.graph;
+part of graph;
 
 /// Contains implementations of all graph features
 class FullGraph
