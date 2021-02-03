@@ -58,6 +58,10 @@ class _Node {
     return to.containsKey(node);
   }
 
+  bool hasEdges() {
+    return to.isNotEmpty || from.isNotEmpty;
+  }
+
   bool hasToV(_Node node, key) {
     if (to.containsKey(node)) {
       final edge = to[node];
