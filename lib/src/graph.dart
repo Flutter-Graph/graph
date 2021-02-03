@@ -1,25 +1,25 @@
-import 'package:flutter/rendering.dart';
-import 'package:graph/src/ui/graph_renderer.dart';
-import 'package:graph/src/ui/paint_delegate.dart';
+library meowtype.graph;
 
-import 'list_graph.dart';
-import 'ui/graph_listener.dart';
-import 'vertex.dart';
-import 'edge.dart';
+import 'package:some/index.dart';
+import 'dart:collection';
 
-class Graph extends ListGraph<Vertex, Edge> {
-  GraphRenderer renderer;
-  Graph([bool isDirected = false]) : super(directed: isDirected);
+part 'node.dart';
+part 'utils.dart';
+part './graphs/items.dart';
+part './graphs/directed.dart';
+part './graphs/directed.value.dart';
+part './graphs/undirected.dart';
+part './graphs/undirected.value.dart';
+part './graphs/get.dart';
+part './graphs/full.dart';
 
-  GraphListener graphListener;
+/// Contains [DirectedGraph] and [UndirectedGraph], And can't set the value of the edge
+abstract class LinkGraph implements UndirectedGraph, DirectedGraph {
+  factory LinkGraph() = FullGraph;
+}
 
-  addGraphListener(GraphListener graphListener) {
-    this.graphListener = graphListener;
-    graphListener.repaintGraph();
-  }
-
-  void registerPaintCallback(Function(PaintDelegate delegate) r) =>
-      renderer.rebuild = r;
-
-  void sizeChanged(Size s) => renderer.size = s;   
+/// Contains all types of Graph, The difference with [LinkGraph] is that you can set the value of the edge.
+abstract class Graph extends LinkGraph
+    implements UndirectedValueGraph, DirectedValueGraph {
+  factory Graph() = FullGraph;
 }
