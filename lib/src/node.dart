@@ -1,157 +1,119 @@
 part of graph;
 
-class _Edge {
-  final Set tags = {};
-  final Map<dynamic, Maybe<dynamic>> map = <dynamic, Maybe<dynamic>>{};
-  final Map<dynamic, Set> valtags = <dynamic, Set>{};
-}
+class Node {
+  final String id;
+  NodeData _value;
+  final Map<Node, Edge> to = {};
+  final Set<Node> from = {};
 
-_Node _newNode() => _Node();
-Set _newSet() => <dynamic>{};
+  dynamic position;
+  dynamic size;
 
-class _Node {
-  final Set<_Node> from = {};
+  Node._(value)
+      : _value = value,
+        id = Uuid().v4();
 
-  final Map<_Node, _Edge> to = {};
+  dynamic get value => _value.value;
 
-  static _Edge newInnerEdge() => _Edge();
+  String get label => _value.label ?? id;
 
-  bool setFrom(_Node node) {
-    return from.add(node);
+  double get height => size.height;
+
+  double get width => size.width;
+
+  double get x => position.dx;
+
+  double get y => position.dy;
+
+  factory Node.fromVal(val) {
+    return Node._(DefaultNodeData(val));
   }
 
-  void setTo(_Node node) {
-    _add_or_get(to, node, newInnerEdge);
+  factory Node.fromData(NodeData data) {
+    return Node._(data);
   }
 
-  void setToV(_Node node, key, val) {
-    final edge = _add_or_get(to, node, newInnerEdge);
-    edge.map[key] = Some(val);
+  @override
+  bool operator ==(Object other) {
+    if (other is Node) {
+      return id == other.id;
+    }
+    return false;
   }
 
-  void setTag(_Node node, List tags) {
-    final edge = _add_or_get(to, node, newInnerEdge);
-    edge.tags.addAll(tags);
+  bool get hasEdges => to.isNotEmpty || from.isNotEmpty;
+
+  bool hasTags(Node node, List tags) {
+    if (tags.isEmpty) return false;
+    return to[node]?.tags.containsAll(tags) ?? false;
   }
 
-  void setValTag(_Node node, key, List tags) {
-    final edge = _add_or_get(to, node, newInnerEdge);
-    final tagset = _add_or_get(edge.valtags, key, _newSet);
-    tagset.addAll(tags);
+  bool hasTagAny(Node node, List tags) {
+    if (tags.isEmpty) return false;
+    return tags.any((tag) => to[node]?.tags.contains(tag) ?? false);
   }
 
-  Maybe get(_Node node, key) {
+  bool hasTo(Node node,
+      {List anyTags = const [],
+      List allTags = const [],
+      EdgeType edgeType = EdgeType.all}) {
     if (to.containsKey(node)) {
-      final edge = to[node];
-      if (edge.map.containsKey(key)) {
-        return edge.map[key];
+      if (!to[node]!.isType(edgeType)) {
+        return false;
       }
-    }
-    return None();
-  }
-
-  bool hasFrom(_Node node) {
-    return from.contains(node);
-  }
-
-  bool hasTo(_Node node) {
-    return to.containsKey(node);
-  }
-
-  bool hasEdges() {
-    return to.isNotEmpty || from.isNotEmpty;
-  }
-
-  bool hasToV(_Node node, key) {
-    if (to.containsKey(node)) {
-      final edge = to[node];
-      return edge.map.containsKey(key);
+      if (anyTags.isEmpty && allTags.isEmpty) {
+        return true;
+      }
+      if (anyTags.isEmpty) {
+        return hasTags(node, allTags);
+      }
+      if (allTags.isEmpty) {
+        return hasTagAny(node, anyTags);
+      }
+      return hasTagAny(node, anyTags) && hasTags(node, allTags);
     }
     return false;
   }
 
-  bool hasTag(_Node node, List tags) {
-    if (tags.isEmpty) return false;
-    final edge = _add_or_get(to, node, newInnerEdge);
-    return edge.tags.containsAll(tags);
-  }
-
-  bool hasValTag(_Node node, key, List tags) {
-    if (tags.isEmpty) return false;
-    final edge = _add_or_get(to, node, newInnerEdge);
-    if (edge.valtags.containsKey(key)) {
-      return edge.valtags[key].containsAll(tags);
-    }
-    return false;
-  }
-
-  bool hasTagAny(_Node node, List tags) {
-    if (tags.isEmpty) return false;
-    final edge = _add_or_get(to, node, newInnerEdge);
-    return tags.any((tag) => edge.tags.contains(tag));
-  }
-
-  bool hasValTagAny(_Node node, key, List tags) {
-    if (tags.isEmpty) return false;
-    final edge = _add_or_get(to, node, newInnerEdge);
-    if (edge.valtags.containsKey(key)) {
-      return tags.any((tag) => edge.valtags[key].contains(tag));
-    }
-    return false;
-  }
-
-  bool unsetFrom(_Node node) {
-    return from.remove(node);
-  }
-
-  bool unsetTo(_Node node) {
+  bool unsetTo(Node node) {
     return to.remove(node) != null;
   }
 
-  bool unsetToV(_Node node, key) {
-    if (to.containsKey(node)) {
-      final edge = to[node];
-      edge.valtags.remove(key);
-      return edge.map.remove(key) != null;
-    }
-    return false;
+  bool unsetFrom(Node node) {
+    return from.remove(node);
   }
 
-  bool unsetTag(_Node node, List tags) {
-    final edge = _try_get(to, node);
-    if (edge is Some) {
-      edge.val.tags.removeAll(tags);
-      return true;
-    }
-    return false;
+  bool hasFrom(Node node) {
+    return from.contains(node);
   }
 
-  bool unsetValTag(_Node node, key, List tags) {
-    final edge = _try_get(to, node);
-    if (edge is Some) {
-      if (edge.val.valtags.containsKey(key)) {
-        edge.val.valtags[key].removeAll(tags);
-        return true;
-      }
-    }
-    return false;
+  void setFrom(Node node) {
+    from.add(node);
   }
 
-  bool clearTags(_Node node) {
-    final edge = _try_get(to, node);
-    if (edge is Some) {
-      edge.val.tags.clear();
-      return true;
-    }
-    return false;
+  void setTo(Node node,
+      {value, List tags = const [], directed = true, String? sharedId}) {
+    to[node] =
+        Edge(this, node, directed: directed, sharedId: sharedId, value: value)
+          ..tags.addAll(tags);
   }
 
-  bool clearValTags(_Node node) {
-    final edge = _try_get(to, node);
-    if (edge is Some) {
-      edge.val.valtags.clear();
-      return true;
-    }
-    return false;
-  }
+  @override
+  String toString() => '''id: $id \n value: $value''';
+}
+
+abstract class NodeData {
+  String? get label;
+
+  dynamic get value;
+}
+
+class DefaultNodeData extends NodeData {
+  @override
+  dynamic value;
+
+  DefaultNodeData([this.value]);
+
+  @override
+  String? get label => null;
 }

@@ -5,10 +5,7 @@ class FullGraph
     with
         GraphItemsMixin,
         UndirectedGraphMixin,
-        UndirectedValueGraphMixin,
         DirectedGraphMixin,
-        DirectedValueGraphMixin,
         GraphGetMixin,
-        GraphLayoutMixin,
-        IterableMixin
+        IterableMixin<Node>
     implements Graph {}

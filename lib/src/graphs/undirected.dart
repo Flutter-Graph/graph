@@ -5,84 +5,120 @@ abstract class UndirectedGraph extends GraphItems {
   factory UndirectedGraph() = FullGraph;
 
   /// create an link between 2 nodes
-  /// 
+  ///
   /// Optional [tags] for setting tags
-  void link(a, b, {List tags});
+  /// Overrides any existing undirected Link
+  Edge link(a, b, {List tags, value});
 
-  /// Determine if there is an link between 2 nodes, **No matter what direction**
-  /// 
+  /// Determine if there is an link between 2 nodes
+  /// if edgeType is [EdgeType.directed] the direction does not matter
+  ///
   /// (Optional) Only if it matches any of [anyTags] and matches all items in [allTags]
-  bool hasLink(a, b, {List anyTags, List allTags});
+  bool hasLink(a, b, {List anyTags, List allTags, EdgeType edgeType});
 
   /// Remove the link between 2 nodes
-  /// 
+  ///
   /// (Optional) Only if it matches any of [anyTags] and matches all items in [allTags]
   bool unLink(a, b, {List anyTags, List allTags});
 
-  /// Get all the links of this node
-  /// 
+  /// Get all neighbours of this node
+  ///
   /// (Optional) Only if it matches any of [anyTags] and matches all items in [allTags]
-  Iterable links(val, {List anyTags, List allTags});
+  Iterable<Node> neighbours(val, {List anyTags, List allTags,EdgeType edgeType});
+
+  /// Get all edges of the graph
+  /// Undirected edges are seen as two edges one in each direction
+  /// (Optional) Only if it matches any of [anyTags] and matches all items in [allTags]
+  Iterable<Edge> links({List anyTags, List allTags});
+
+  /// Get all edges in the graph
+  Iterable<Edge> get edges;
 }
 
 /// Mixing of implementations of [UndirectedGraph]
 mixin UndirectedGraphMixin on GraphItemsMixin implements UndirectedGraph {
   @override
-  void link(a, b, {List tags = const []}) {
-    _Tuple2(a, b)
-        .map((v) => _map_add_or_get(v, _newNode))
+  Edge link(a, b, {List tags = const [], value}) {
+    final linkId = Uuid().v4();
+
+    final tuple = _Tuple2(a, b)
+        .map((v) => _getOrAdd(v))
         .effect
         .mutual((f, t) => f.setFrom(t))
-        .mutual((f, t) => f.setTo(t))
-        .mutual((f, t) => f.setTag(t, tags));
+        .mutual((f, t) => f.setTo(t,
+            value: value, tags: tags, sharedId: linkId, directed: false))
+        .t;
+
+    return tuple.a.to[tuple.b]!;
   }
 
   @override
-  bool hasLink(a, b, {List anyTags = const [], List allTags = const []}) {
+  bool hasLink(a, b, {List anyTags = const [], List allTags = const [], EdgeType edgeType = EdgeType.all}) {
+    final comparison = edgeType == EdgeType.undirected ? _and : _or;
     return _Tuple2(a, b)
-        .map((v) => _map_add_or_get(v, _newNode))
-        .mutual((f, t) => _check_hasTo_and_all_any_tags(f, t,
-            anyTags: anyTags, allTags: allTags))
-        .toDo(_or);
+        .map((v) => _getOrAdd(v))
+        .mutual((f, t) =>
+            f.hasTo(t, allTags: allTags, anyTags: anyTags, edgeType: edgeType))
+        .toDo(comparison);
   }
 
   @override
   bool unLink(a, b, {List anyTags = const [], List allTags = const []}) {
-    return _Tuple2(a, b)
-        .map((v) => _map_add_or_get(v, _newNode))
-        .where((t) => t
-            .mutual((f, t) => _check_hasTo_and_all_any_tags(f, t,
-                anyTags: anyTags, allTags: allTags))
-            .toDo(_or))
-        .some((t) => t
-            .fork()
-            .mapFn<bool Function(_Node, _Node), _Tuple2<bool>>(
-                (t) => (fn) => t.mutual(fn))
-            // unsetTo will delete the edge and tab
-            .allDo((f, t) => f.unsetTo(t), (f, t) => f.unsetFrom(t))
-            .map((t) => t.toDo(_or))
-            .toDo(_or))
-        .defaultVal(false)
-        .val;
+    if (!has(a) || !has(b)) {
+      return false;
+    }
+
+    final tupleWhere = _Tuple2(a, b).map((v) => _getOrAdd(v)).where((t) => t
+        .mutual((f, t) =>
+            f.hasTo(t, anyTags: anyTags, allTags: allTags, edgeType: EdgeType.undirected))
+        .toDo(_or));
+    if (tupleWhere != null) {
+      return tupleWhere
+          .fork()
+          .mapFn<bool Function(Node, Node), _Tuple2<bool>>(
+              (t) => (fn) => t.mutual(fn))
+          .allDo((f, t) => f.unsetTo(t), (f, t) => f.unsetFrom(t))
+          .map((t) => t.toDo(_or))
+          .toDo(_and);
+    }
+    return false;
   }
 
   @override
-  Iterable links(val, {List anyTags = const [], List allTags = const []}) {
-    final _v = _map_add_or_get(val, _newNode);
-    if (anyTags.isEmpty && allTags.isEmpty) {
-      final from = _v.from.map((n) => _node_to_val[n]);
-      final to = _v.to.keys.map((n) => _node_to_val[n]);
-      return _concat(from, to).toSet();
+  Iterable<Node> neighbours(val,
+      {List anyTags = const [], List allTags = const [], EdgeType edgeType = EdgeType.all}) {
+    final _v = _getOrAdd(val);
+    if (anyTags.isEmpty && allTags.isEmpty && edgeType == EdgeType.all) {
+      return _v.to.keys;
     } else {
-      final from = _v.from
-          .where((n) =>
-              _check_all_any_tags(n, _v, anyTags: anyTags, allTags: allTags))
-          .map((n) => _node_to_val[n]);
-      final to = _v.to.keys
-          .where((n) =>
-              _check_all_any_tags(_v, n, anyTags: anyTags, allTags: allTags))
-          .map((n) => _node_to_val[n]);
-      return _concat(from, to).toSet();
+      return _v.to.values
+          .where((n) => _v.hasTo(n.target, anyTags: anyTags, allTags: allTags,edgeType: edgeType))
+          .map((e) => e.target);
     }
   }
+
+  @override
+  Iterable<Edge> links(
+      {List anyTags = const [], List allTags = const [], EdgeType edgeType = EdgeType.all}) sync* {
+    for (final node in this) {
+      yield* node.to.values.where((e) {
+        if(!e.isType(edgeType)){
+          return false;
+        }
+        if (anyTags.isEmpty && allTags.isEmpty) {
+          return true;
+        } else if (anyTags.isEmpty) {
+          return e.tags.containsAll(allTags);
+        } else if (allTags.isEmpty) {
+          return e.tags.any((e) => anyTags.contains(e));
+        } else {
+          return e.tags.any((e) => anyTags.contains(e)) &&
+              e.tags.containsAll(allTags);
+        }
+      });
+    }
+  }
+
+  @override
+  Iterable<Edge> get edges => expand((e) => e.to.values);
 }

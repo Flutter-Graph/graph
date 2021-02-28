@@ -3,44 +3,51 @@ part of graph;
 /// The part used to get the value of the edge in the graph
 abstract class GraphGet implements GraphItems {
   /// Get the value on the specified edge
-  ///
+  /// If the given from and to is of type [Node] and unknown, the node will be inserted into the graph
+  /// If the given from and to is of type [String] and a key of a known [Node] the corresponding edge is returned
+  /// If the given type doesnt match any of these criteria a new [Node] with [Node.value] is created
   /// (Optional) Only if it matches any of [anyTags] and matches all items in [allTags]
-  Maybe get(from, to, key, {List anyTags, List allTags});
 
-  /// Get the value on the specified edge but by Generic
-  ///
-  /// Equivalent to [get]([from], [to], **[T]**)
-  ///
-  /// (Optional) Only if it matches any of [anyTags] and matches all items in [allTags]
-  Maybe getBy<T>(from, to, {List anyTags, List allTags});
+  Edge? getLink(from, to, {List anyTags, List allTags});
 
-  /// Get the VectorPosition of an specified node
-  Maybe<VectorPosition> getPos(of);
+  Node get(val);
+
+  bool update(Node node);
 }
 
 /// Mixing of implementations of [GraphGet]
 mixin GraphGetMixin on GraphItemsMixin implements GraphGet {
   @override
-  Maybe get(from, to, key, {List anyTags = const [], List allTags = const []}) {
-    final f = _map_add_or_get(from, _newNode);
-    final t = _map_add_or_get(to, _newNode);
-    if (_check_hasToVal_and_all_any_val_tags(f, t, key,
-        anyTags: anyTags, allTags: allTags)) {
-      return f.get(t, key);
+  Edge? getLink(from, to, {List anyTags = const [], List allTags = const []}) {
+    assert(from != null && to != null, 'from and to must not be null');
+
+    final f = _getOrAdd(from);
+    final t = _getOrAdd(to);
+
+    if (f.hasTo(t)) {
+      if (anyTags.isEmpty && allTags.isEmpty) {
+        return f.to[t];
+      }
+      if (f.hasTagAny(t, anyTags) && f.hasTags(t, allTags)) {
+        return f.to[t];
+      }
     }
-    return None();
+    return null;
   }
 
   @override
-  Maybe getBy<T>(from, to,
-          {List anyTags = const [], List allTags = const []}) =>
-      get(from, to, T, anyTags: anyTags, allTags: allTags);
+  Node get(val) {
+    return _getOrAdd(val);
+  }
 
   @override
-  Maybe<VectorPosition> getPos(of) {
-    if (!has(of)) {
-      return Maybe.None();
+  bool update(Node node) {
+    if (!has(node)) {
+      return false;
     }
-    return Maybe.Some(_node_to_pos[of]);
+    items.singleWhere((element) => element.id == node.id)
+      ..size = node.size
+      ..position = node.position;
+    return true;
   }
 }
