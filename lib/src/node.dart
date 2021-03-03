@@ -18,10 +18,19 @@ class Node {
     return Node._(data);
   }
 
-  late double _radius;
+   bool? _labelVisible;
+  bool get labelVisible {
+    assert(_labelVisible != null, 'labelVisible can not be accessed before it was initialized');
+    return _labelVisible!;
+  }
+  set labelVisible(bool visible) {
+    _labelVisible = visible;
+  }
+
+  double? _radius;
   double get radius {
-    assert(size != null, 'radius can not be accessed before it was initialized');
-    return _radius;
+    assert(_radius != null, 'radius can not be accessed before it was initialized');
+    return _radius!;
   }
   set radius(double radius) {
     _radius = radius;
@@ -29,17 +38,17 @@ class Node {
 
   dynamic _position;
   dynamic get position {
-    assert(size != null, 'Position can not be accessed before it was initialized');
+    assert(_position != null, 'Position can not be accessed before it was initialized');
     return _position;
   }
   set position(dynamic position) {
-    assert(size != null, 'Position can not be initialized with null');
+    assert(position != null, 'Position can not be initialized with null');
     _position = position;
   }
 
   dynamic _size;
   dynamic get size {
-    assert(size != null, 'Size can not be accessed before it was initialized');
+    assert(_size != null, 'Size can not be accessed before it was initialized');
     return _size;
   }
   set size(dynamic size) {
