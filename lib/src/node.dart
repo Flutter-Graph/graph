@@ -6,12 +6,48 @@ class Node {
   final Map<Node, Edge> to = {};
   final Set<Node> from = {};
 
-  dynamic position;
-  dynamic size;
-
   Node._(value)
       : _value = value,
         id = Uuid().v4();
+
+  factory Node.fromVal(val) {
+    return Node._(DefaultNodeData(val));
+  }
+
+  factory Node.fromData(NodeData data) {
+    return Node._(data);
+  }
+
+  late double _radius;
+  double get radius {
+    assert(size != null, 'radius can not be accessed before it was initialized');
+    return _radius;
+  }
+  set radius(double radius) {
+    _radius = radius;
+  }
+
+  dynamic _position;
+  dynamic get position {
+    assert(size != null, 'Position can not be accessed before it was initialized');
+    return _position;
+  }
+  set position(dynamic position) {
+    assert(size != null, 'Position can not be initialized with null');
+    _position = position;
+  }
+
+  dynamic _size;
+  dynamic get size {
+    assert(size != null, 'Size can not be accessed before it was initialized');
+    return _size;
+  }
+  set size(dynamic size) {
+    assert(size != null, 'Size can not be initialized with null');
+    _size = size;
+  }
+
+
 
   dynamic get value => _value.value;
 
@@ -25,13 +61,6 @@ class Node {
 
   double get y => position.dy;
 
-  factory Node.fromVal(val) {
-    return Node._(DefaultNodeData(val));
-  }
-
-  factory Node.fromData(NodeData data) {
-    return Node._(data);
-  }
 
   @override
   bool operator ==(Object other) {
